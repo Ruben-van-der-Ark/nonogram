@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.CompilerServices;
 
+// TODO: Fix twee verschillende comment talen
 
 namespace NonogramDatastructure
 {
