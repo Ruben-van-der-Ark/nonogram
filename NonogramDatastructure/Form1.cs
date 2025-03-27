@@ -3,19 +3,17 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
-// TODO: Fix twee verschillende comment talen
-
 namespace NonogramDatastructure
 {
     public partial class Form1 : Form
     {
         // Define the necessary variables
         bool[,] solution;
+        bool[,] guess;
         int cellsize;
         int gridX = 450;
         int gridY = 50;
         int blackchance = 3;
-        int cols;
         int rows;
 
 
@@ -26,28 +24,7 @@ namespace NonogramDatastructure
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
-            // If there isn't a grid, don't try painting it
-            if (solution is null)
-            {
-                return;
-            }
-
-            // Definieer twee kleuren
-            SolidBrush blackBrush = new SolidBrush(Color.Black);
-            SolidBrush whiteBrush = new SolidBrush(Color.White);
-
-            // Go through every cell in the grid
-            for (int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < cols; j++)
-                {
-                    // Define the place and size of the rectangle
-                    RectangleF rect = new RectangleF(i * cellsize + gridX, j * cellsize + gridY, cellsize, cellsize);
-
-                    // Paint the rectangle with the correct color (black for true, white for false)
-                    e.Graphics.FillRectangle(solution[i, j] ? blackBrush : whiteBrush, rect);
-                }
-            }
+            DrawGrid(guess, e);
 
             // Columns
             StringFormat drawFormat = new StringFormat();
@@ -55,16 +32,16 @@ namespace NonogramDatastructure
             for (int i = 0; i < rows; i++)
             {
                 string values = string.Join(Environment.NewLine, GetColLabelNumbers(i));
-                DrawString(i * cellsize + gridX, 
+                DrawString(i * cellsize + gridX,
                     gridY + rows * cellsize,
                     values.Normalize(), drawFormat);
             }
             drawFormat = new StringFormat();
-            for (int i = 0; i < cols; i++)
+            for (int i = 0; i < rows; i++)
             {
                 string values = string.Join(", ", GetRowLabelNumbers(i)).Trim();
                 float stringWidth = GetTextWidth(values);
-                DrawString(gridX - stringWidth - 10,
+                DrawString(gridX - stringWidth - cellsize/2f,
                     gridY + i * cellsize,
                     values,
                     drawFormat);
@@ -73,23 +50,7 @@ namespace NonogramDatastructure
 
         private void btnGenerate_Click(object sender, EventArgs e)
         {
-            // Make a boolean array to store the solution
-            // Every boolean defaults to false
-            rows = (int)numRows.Value;
-            cols = (int)numCols.Value;
-            solution = new bool[rows, cols];
-            cellsize = 250 / (rows);
-            // Instantiate a Random class to generate random numbers
-            Random rand = new Random();
-
-            // Go through every cell and pick a random boolean value
-            for (int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < cols; j++)
-                {
-                    solution[i, j] = (rand.Next(blackchance) > 0); // 25/75 for true or false
-                }
-            }
+            GenerateGrid();
             this.Refresh();
         }
 
@@ -100,7 +61,7 @@ namespace NonogramDatastructure
             int idx = 0;
             total.Add(0); // Ensure at least one element exists to modify
 
-            for (int i = 0; i < cols; i += 1)
+            for (int i = 0; i < rows; i += 1)
             {
                 if (solution[row, i])
                 {
@@ -172,21 +133,66 @@ namespace NonogramDatastructure
             g.Dispose();
             return charWidth;
         }
-        public float GetTextHeight(string text)
+        
+        private void DrawGrid(bool[,] grid, PaintEventArgs e)
         {
-            // If there isn't a cellsize yet, that means we can't calculate the font size.
-            if (cellsize == 0)
+            // Define two colors
+            SolidBrush blackBrush = new SolidBrush(Color.Black);
+            SolidBrush whiteBrush = new SolidBrush(Color.White);
+
+            // Go through every cell in the grid
+            for (int i = 0; i < rows; i++)
             {
-                MessageBox.Show("Character height calculation error");
-                return 0;
+                for (int j = 0; j < rows; j++)
+                {
+                    // Define the place and size of the rectangle
+                    RectangleF rect = new RectangleF(i * cellsize + gridX, j * cellsize + gridY, cellsize, cellsize);
+                    // Paint the rectangle with the correct color (black for true, white for false)
+                    e.Graphics.FillRectangle(grid[i, j] ? blackBrush : whiteBrush, rect);
+                }
             }
-            Graphics g = CreateGraphics();
-            Font drawFont = new Font("Consolas", 0.66f * cellsize);
-            SizeF size = g.MeasureString(text, drawFont);
-            float charHeight = size.Height; // Width in pixels
-            g.Dispose();
-            return charHeight;
+
+            // Go through again to draw the lines (these must be drawn last to ensure they're on top of the grid)
+            Pen gridLines = new Pen(blackBrush);
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < rows; j++)
+                {
+                    // Draw all vertical lines
+                    e.Graphics.DrawLine(gridLines, gridX + j * cellsize, gridY, gridX + j * cellsize, gridY + rows * cellsize);
+                }
+                // Draw all horizontal lines
+                e.Graphics.DrawLine(gridLines, gridX, gridY + i * cellsize, gridX + rows * cellsize, gridY + i * cellsize);
+            }
+
+            // Draw the borders
+            gridLines = new Pen(blackBrush,2);
+            e.Graphics.DrawLine(gridLines, gridX, gridY, gridX + rows * cellsize, gridY);
+            e.Graphics.DrawLine(gridLines, gridX, gridY, gridX, gridY + rows * cellsize);
+            e.Graphics.DrawLine(gridLines, gridX + rows * cellsize, gridY, gridX + rows * cellsize, gridY + rows * cellsize);
+            e.Graphics.DrawLine(gridLines, gridX + rows * cellsize, gridY + rows * cellsize, gridX, gridY + rows * cellsize);
         }
 
+        private void GenerateGrid()
+        {
+            // Make a boolean array to store the solution
+            // Every boolean defaults to false
+            rows = (int)numRows.Value;
+            solution = new bool[rows, rows];
+            guess = new bool[rows, rows];
+            cellsize = 250 / (rows);
+            // Instantiate a Random class to generate random numbers
+            Random rand = new Random();
+
+            // Go through every cell and pick a random boolean value
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < rows; j++)
+                {
+                    solution[i, j] = (rand.Next(blackchance) > 0); // 25/75 for true or false
+                }
+            }
+
+        }
     }
 }
