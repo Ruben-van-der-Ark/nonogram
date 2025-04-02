@@ -26,6 +26,7 @@ namespace NonogramDatastructure
         {
             DrawGrid(guess, e);
 
+            // TODO: Modulate this
             // Columns
             StringFormat drawFormat = new StringFormat();
             drawFormat.Alignment = StringAlignment.Center;
