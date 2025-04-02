@@ -36,7 +36,8 @@
             // 
             // numRows
             // 
-            this.numRows.Location = new System.Drawing.Point(244, 111);
+            this.numRows.Location = new System.Drawing.Point(217, 89);
+            this.numRows.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.numRows.Maximum = new decimal(new int[] {
             20,
             0,
@@ -48,7 +49,7 @@
             0,
             0});
             this.numRows.Name = "numRows";
-            this.numRows.Size = new System.Drawing.Size(120, 26);
+            this.numRows.Size = new System.Drawing.Size(107, 22);
             this.numRows.TabIndex = 0;
             this.numRows.Value = new decimal(new int[] {
             15,
@@ -59,17 +60,18 @@
             // lblRows
             // 
             this.lblRows.AutoSize = true;
-            this.lblRows.Location = new System.Drawing.Point(167, 113);
+            this.lblRows.Location = new System.Drawing.Point(148, 90);
             this.lblRows.Name = "lblRows";
-            this.lblRows.Size = new System.Drawing.Size(71, 20);
+            this.lblRows.Size = new System.Drawing.Size(59, 16);
             this.lblRows.TabIndex = 2;
             this.lblRows.Text = "Grid size";
             // 
             // btnGenerate
             // 
-            this.btnGenerate.Location = new System.Drawing.Point(171, 143);
+            this.btnGenerate.Location = new System.Drawing.Point(152, 114);
+            this.btnGenerate.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnGenerate.Name = "btnGenerate";
-            this.btnGenerate.Size = new System.Drawing.Size(193, 35);
+            this.btnGenerate.Size = new System.Drawing.Size(172, 28);
             this.btnGenerate.TabIndex = 4;
             this.btnGenerate.Text = "Generate grid";
             this.btnGenerate.UseVisualStyleBackColor = true;
@@ -77,14 +79,16 @@
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1802, 795);
+            this.ClientSize = new System.Drawing.Size(1602, 636);
             this.Controls.Add(this.btnGenerate);
             this.Controls.Add(this.lblRows);
             this.Controls.Add(this.numRows);
+            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "Form1";
             this.Text = "Form1";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.Form1_Paint);
             ((System.ComponentModel.ISupportInitialize)(this.numRows)).EndInit();
             this.ResumeLayout(false);
