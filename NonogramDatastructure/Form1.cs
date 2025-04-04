@@ -9,15 +9,15 @@ namespace NonogramDatastructure
     public partial class Form1 : Form
     {
         // Define all variables
-        bool[,] solution; // The correct solution of the puzzle
-        bool?[,] guess; // The players guess of the solution
-        int cellsize; // The size of each grid cell in pixels
-        int gridX = 450; // The x position of the grid
-        int gridY = 50; // The y position of the grid
-        int blackchance = 3; // The chance for any cell to be black in the solution
-        int gridsize; // How many rows and columns there are in the grid
-        bool correct; // Whether the grid is correctly solved
-        bool generated; // Whether the solution has already been generated
+        private bool[,] solution; // The correct solution of the puzzle
+        private bool?[,] guess; // The players guess of the solution
+        private int cellsize; // The size of each grid cell in pixels
+        private int gridX = 450; // The x position of the grid
+        private int gridY = 50; // The y position of the grid
+        private int blackchance = 3; // The chance for any cell to be black in the solution
+        private int gridsize; // How many rows and columns there are in the grid
+        private bool correct; // Whether the grid is correctly solved
+        private bool generated; // Whether the solution has already been generated
 
         public Form1()
         {
