@@ -8,16 +8,16 @@ namespace NonogramDatastructure
 {
     public partial class Form1 : Form
     {
-        // Define the necessary variables
-        bool[,] solution;
-        bool?[,] guess;
-        int cellsize;
-        int gridX = 450;
-        int gridY = 50;
-        int blackchance = 3;
-        int rows;
-        bool? correct = null;
-        bool generated = false;
+        // Define all variables
+        private bool[,] solution; // The correct solution of the puzzle
+        private bool?[,] guess; // The players guess of the solution
+        private int cellsize; // The size of each grid cell in pixels
+        private int gridX = 450; // The x position of the grid
+        private int gridY = 50; // The y position of the grid
+        private int blackchance = 3; // The chance for any cell to be black in the solution
+        private int rows; // How many rows and columns there are in the grid
+        private bool correct; // Whether the grid is correctly solved
+        private bool generated; // Whether the solution has already been generated
 
         public Form1()
         {
@@ -38,7 +38,7 @@ namespace NonogramDatastructure
             btnCheck.Visible = true;
         }
 
-        public int[] GetColLabelNumbers(int row)
+        private int[] GetColLabelNumbers(int row)
         {
             List<int> total = new List<int>(); // Initialize the list
 
@@ -65,7 +65,7 @@ namespace NonogramDatastructure
         }
 
 
-        public int[] GetRowLabelNumbers(int col)
+        private int[] GetRowLabelNumbers(int col)
         {
             List<int> total = new List<int>(); // Initialize the list
 
@@ -91,18 +91,21 @@ namespace NonogramDatastructure
             return total.ToArray();
         }
 
-        public void DrawString(Graphics g, float x, float y, string text, StringFormat drawFormat)
+        private void DrawString(Graphics g, float x, float y, string text, StringFormat drawFormat)
         {
+            // Generate all the paramaters
             Graphics formGraphics = CreateGraphics();
             Font drawFont = new Font("Consolas", 0.66f * cellsize);
             SolidBrush drawBrush = new SolidBrush(Color.Black);
+            // Draw the string
             g.DrawString(text, drawFont, drawBrush, x + cellsize / 2, y, drawFormat);
+            // Garbage collect
             drawFont.Dispose();
             drawBrush.Dispose();
             formGraphics.Dispose();
         }
 
-        public float GetTextWidth(string text)
+        private float GetTextWidth(string text)
         {
             // If there isn't a cellsize yet, that means we can't calculate the font size.
             if (!generated)
@@ -115,16 +118,18 @@ namespace NonogramDatastructure
             SizeF size = g.MeasureString(text, drawFont);
             float charWidth = size.Width; // Width in pixels
             g.Dispose();
+            drawFont.Dispose();
             return charWidth;
         }
-        
+
         private void DrawGrid(bool?[,] grid, PaintEventArgs e)
         {
             // Define two colors
             SolidBrush blackBrush = new SolidBrush(Color.Black);
             SolidBrush whiteBrush = new SolidBrush(Color.White);
-            Pen blackPen = new Pen(blackBrush, 2);
 
+            // Define a pen for the X symbols in notes
+            Pen blackPen = new Pen(blackBrush, 2);
 
             // Go through every cell in the grid
             for (int i = 0; i < rows; i++)
@@ -136,8 +141,9 @@ namespace NonogramDatastructure
                     // Paint the rectangle with the correct color (black for true, white for false)
                     if (grid[i, j] != null)
                     {
-                        e.Graphics.FillRectangle((bool) grid[i, j] ? blackBrush : whiteBrush, rect);
-                    } else
+                        e.Graphics.FillRectangle((bool)grid[i, j] ? blackBrush : whiteBrush, rect);
+                    }
+                    else
                     {
                         e.Graphics.FillRectangle(whiteBrush, rect);
                         Point toplt = new Point(i * cellsize + gridX, j * cellsize + gridY);
@@ -164,11 +170,17 @@ namespace NonogramDatastructure
             }
 
             // Draw the borders
-            gridLines = new Pen(blackBrush,2);
+            gridLines = new Pen(blackBrush, 2);
             e.Graphics.DrawLine(gridLines, gridX, gridY, gridX + rows * cellsize, gridY);
             e.Graphics.DrawLine(gridLines, gridX, gridY, gridX, gridY + rows * cellsize);
             e.Graphics.DrawLine(gridLines, gridX + rows * cellsize, gridY, gridX + rows * cellsize, gridY + rows * cellsize);
             e.Graphics.DrawLine(gridLines, gridX + rows * cellsize, gridY + rows * cellsize, gridX, gridY + rows * cellsize);
+
+            // Dispose of objects
+            blackBrush.Dispose();
+            whiteBrush.Dispose();
+            blackPen.Dispose();
+            gridLines.Dispose();
         }
 
         private void GenerateGrid()
@@ -176,9 +188,10 @@ namespace NonogramDatastructure
             generated = true;
             // Make a boolean array to store the solution
             rows = (int)numRows.Value;
-            solution = new bool[rows, rows]; // Every boolean defaults to false
-            guess = new bool?[rows, rows]; // Every boolean? here defaults to null, so we set them to false too
-
+            solution = new bool[rows, rows]; // Every boolean here defaults to false
+            
+            guess = new bool?[rows, rows]; // Every boolean? here defaults to null
+            // That's why we set them all to false here
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < rows; j++)
@@ -212,6 +225,7 @@ namespace NonogramDatastructure
                     gridY + rows * cellsize,
                     values.Normalize(), drawFormat);
             }
+            drawFormat.Dispose();
         }
 
         private void DrawRowLabels(Graphics g)
@@ -226,11 +240,14 @@ namespace NonogramDatastructure
                     values,
                     drawFormat);
             }
+            drawFormat.Dispose();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            // Hide the check answer button until a grid has been generated
             btnCheck.Visible = false;
+            // Enable DoubleBuffer
             InitializeComponent();
             DoubleBuffered = true;
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
@@ -247,7 +264,7 @@ namespace NonogramDatastructure
             int CellY = e.Y;
             CellX -= gridX;
             CellY -= gridY;
-            CellX /= cellsize; 
+            CellX /= cellsize;
             CellY /= cellsize;
 
             // If it falls within the grid
@@ -287,7 +304,7 @@ namespace NonogramDatastructure
                 {
                     // If the guess is NOT the same as the solution
                     // (and if the cell is null which is used for notes, assume it's white)
-                    if ((guess[i, j]?? false) != solution[i, j])
+                    if ((guess[i, j] ?? false) != solution[i, j])
                     {
                         // The puzzle is incorrectly solved
                         correct = false;
@@ -304,7 +321,7 @@ namespace NonogramDatastructure
             // Otherwise, we check the answer
             CheckAnswer();
             // And display the appropriate MessageBox
-            MessageBox.Show(correct == true ? "You win!" : "One or more cells are incorrect. Try again.");
+            MessageBox.Show(correct == true ? "Gewonnen!" : "De puzzel is nog niet goed opgelost. Probeer het opnieuw.");
         }
     }
 }
