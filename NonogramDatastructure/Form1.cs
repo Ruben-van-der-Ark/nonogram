@@ -27,8 +27,8 @@ namespace NonogramDatastructure
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             DrawGrid(guess, e);
-            DrawColumnLabels();
-            DrawRowLabels();
+            DrawColumnLabels(e.Graphics);
+            DrawRowLabels(e.Graphics);
         }
 
         private void btnGenerate_Click(object sender, EventArgs e)
@@ -91,12 +91,12 @@ namespace NonogramDatastructure
             return total.ToArray();
         }
 
-        public void DrawString(float x, float y, string text, StringFormat drawFormat)
+        public void DrawString(Graphics g, float x, float y, string text, StringFormat drawFormat)
         {
-            Graphics formGraphics = this.CreateGraphics();
+            Graphics formGraphics = CreateGraphics();
             Font drawFont = new Font("Consolas", 0.66f * cellsize);
             SolidBrush drawBrush = new SolidBrush(Color.Black);
-            formGraphics.DrawString(text, drawFont, drawBrush, x + cellsize / 2, y, drawFormat);
+            g.DrawString(text, drawFont, drawBrush, x + cellsize / 2, y, drawFormat);
             drawFont.Dispose();
             drawBrush.Dispose();
             formGraphics.Dispose();
@@ -201,27 +201,27 @@ namespace NonogramDatastructure
             }
 
         }
-        private void DrawColumnLabels()
+        private void DrawColumnLabels(Graphics g)
         {
             StringFormat drawFormat = new StringFormat();
             drawFormat.Alignment = StringAlignment.Center;
             for (int i = 0; i < rows; i++)
             {
                 string values = string.Join(Environment.NewLine, GetColLabelNumbers(i));
-                DrawString(i * cellsize + gridX,
+                DrawString(g, i * cellsize + gridX,
                     gridY + rows * cellsize,
                     values.Normalize(), drawFormat);
             }
         }
 
-        private void DrawRowLabels()
+        private void DrawRowLabels(Graphics g)
         {
             StringFormat drawFormat = new StringFormat();
             for (int i = 0; i < rows; i++)
             {
                 string values = string.Join(", ", GetRowLabelNumbers(i)).Trim();
                 float stringWidth = GetTextWidth(values);
-                DrawString(gridX - stringWidth - cellsize / 2f,
+                DrawString(g, gridX - stringWidth - cellsize / 2f,
                     gridY + i * cellsize,
                     values,
                     drawFormat);
@@ -231,48 +231,65 @@ namespace NonogramDatastructure
         private void Form1_Load(object sender, EventArgs e)
         {
             btnCheck.Visible = false;
+            InitializeComponent();
+            DoubleBuffered = true;
+            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
+            UpdateStyles();
         }
 
         private void Form1_MouseClick(object sender, MouseEventArgs e)
         {
-            if (!generated)
-            {
-                return;
-            }
+            // No grid made: don't do anything
+            if (!generated) { return; }
+
+            // Translate the mouse position to grid coordinates
             int CellX = e.X;
             int CellY = e.Y;
             CellX -= gridX;
             CellY -= gridY;
             CellX /= cellsize; 
             CellY /= cellsize;
+
+            // If it falls within the grid
             if (CellX >= 0 & CellX < rows & CellY >= 0 & CellY < rows)
             {
+                // Set that cell to the appropriate value (left click for black, right for notes and middle click for white)
+                // (I chose middle click for white as it's the least important one and not all players will have acces to middle click)
                 switch (e.Button)
                 {
                     case MouseButtons.Left:
-                        guess[CellX, CellY] = true; 
+                        guess[CellX, CellY] = true;
                         break;
                     case MouseButtons.Right:
-                        guess[CellX, CellY] = false; 
-                        break;
-                    default:
                         guess[CellX, CellY] = null;
                         break;
+                    default:
+                        guess[CellX, CellY] = false;
+                        break;
                 }
+                // Then refresh the grid
                 Refresh();
             }
         }
 
         private bool? CheckAnswer()
         {
+            // Don't check an answer if no grid has been generated yet
             if (!generated) { return false; }
+
+            // Assume everything is correct
             correct = true;
+
+            // Go through every cell
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < rows; j++)
                 {
+                    // If the guess is NOT the same as the solution
+                    // (and if the cell is null which is used for notes, assume it's white)
                     if ((guess[i, j]?? false) != solution[i, j])
                     {
+                        // The puzzle is incorrectly solved
                         correct = false;
                     }
                 }
@@ -282,8 +299,11 @@ namespace NonogramDatastructure
 
         private void btnCheck_Click(object sender, EventArgs e)
         {
+            // If nothing has been generated, there's no need to check anything
             if (!generated) { return; }
+            // Otherwise, we check the answer
             CheckAnswer();
+            // And display the appropriate MessageBox
             MessageBox.Show(correct == true ? "You win!" : "One or more cells are incorrect. Try again.");
         }
     }
