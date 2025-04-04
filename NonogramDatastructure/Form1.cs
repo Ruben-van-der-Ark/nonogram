@@ -15,7 +15,7 @@ namespace NonogramDatastructure
         private int gridX = 450; // The x position of the grid
         private int gridY = 50; // The y position of the grid
         private int blackchance = 3; // The chance for any cell to be black in the solution
-        private int rows; // How many rows and columns there are in the grid
+        private int gridsize; // How many rows and columns there are in the grid
         private bool correct; // Whether the grid is correctly solved
         private bool generated; // Whether the solution has already been generated
 
@@ -36,6 +36,7 @@ namespace NonogramDatastructure
             GenerateGrid();
             Refresh();
             btnCheck.Visible = true;
+            btnClear.Visible = true;
         }
 
         private int[] GetColLabelNumbers(int row)
@@ -45,7 +46,7 @@ namespace NonogramDatastructure
             int idx = 0;
             total.Add(0); // Ensure at least one element exists to modify
 
-            for (int i = 0; i < rows; i += 1)
+            for (int i = 0; i < gridsize; i += 1)
             {
                 if (solution[row, i])
                 {
@@ -72,7 +73,7 @@ namespace NonogramDatastructure
             int idx = 0;
             total.Add(0); // Ensure at least one element exists to modify
 
-            for (int i = 0; i < rows; i += 1)
+            for (int i = 0; i < gridsize; i += 1)
             {
                 if (solution[i, col])
                 {
@@ -132,9 +133,9 @@ namespace NonogramDatastructure
             Pen blackPen = new Pen(blackBrush, 2);
 
             // Go through every cell in the grid
-            for (int i = 0; i < rows; i++)
+            for (int i = 0; i < gridsize; i++)
             {
-                for (int j = 0; j < rows; j++)
+                for (int j = 0; j < gridsize; j++)
                 {
                     // Define the place and size of the rectangle
                     RectangleF rect = new RectangleF(i * cellsize + gridX, j * cellsize + gridY, cellsize, cellsize);
@@ -158,23 +159,23 @@ namespace NonogramDatastructure
 
             // Go through again to draw the lines (these must be drawn last to ensure they're on top of the grid)
             Pen gridLines = new Pen(blackBrush);
-            for (int i = 0; i < rows; i++)
+            for (int i = 0; i < gridsize; i++)
             {
-                for (int j = 0; j < rows; j++)
+                for (int j = 0; j < gridsize; j++)
                 {
                     // Draw all vertical lines
-                    e.Graphics.DrawLine(gridLines, gridX + j * cellsize, gridY, gridX + j * cellsize, gridY + rows * cellsize);
+                    e.Graphics.DrawLine(gridLines, gridX + j * cellsize, gridY, gridX + j * cellsize, gridY + gridsize * cellsize);
                 }
                 // Draw all horizontal lines
-                e.Graphics.DrawLine(gridLines, gridX, gridY + i * cellsize, gridX + rows * cellsize, gridY + i * cellsize);
+                e.Graphics.DrawLine(gridLines, gridX, gridY + i * cellsize, gridX + gridsize * cellsize, gridY + i * cellsize);
             }
 
             // Draw the borders
             gridLines = new Pen(blackBrush, 2);
-            e.Graphics.DrawLine(gridLines, gridX, gridY, gridX + rows * cellsize, gridY);
-            e.Graphics.DrawLine(gridLines, gridX, gridY, gridX, gridY + rows * cellsize);
-            e.Graphics.DrawLine(gridLines, gridX + rows * cellsize, gridY, gridX + rows * cellsize, gridY + rows * cellsize);
-            e.Graphics.DrawLine(gridLines, gridX + rows * cellsize, gridY + rows * cellsize, gridX, gridY + rows * cellsize);
+            e.Graphics.DrawLine(gridLines, gridX, gridY, gridX + gridsize * cellsize, gridY);
+            e.Graphics.DrawLine(gridLines, gridX, gridY, gridX, gridY + gridsize * cellsize);
+            e.Graphics.DrawLine(gridLines, gridX + gridsize * cellsize, gridY, gridX + gridsize * cellsize, gridY + gridsize * cellsize);
+            e.Graphics.DrawLine(gridLines, gridX + gridsize * cellsize, gridY + gridsize * cellsize, gridX, gridY + gridsize * cellsize);
 
             // Dispose of objects
             blackBrush.Dispose();
@@ -186,28 +187,22 @@ namespace NonogramDatastructure
         private void GenerateGrid()
         {
             generated = true;
-            // Make a boolean array to store the solution
-            rows = (int)numRows.Value;
-            solution = new bool[rows, rows]; // Every boolean here defaults to false
-            
-            guess = new bool?[rows, rows]; // Every boolean? here defaults to null
-            // That's why we set them all to false here
-            for (int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < rows; j++)
-                {
-                    guess[i, j] = false;
-                }
-            }
 
-            cellsize = 250 / (rows);
+            gridsize = (int)numGridSize.Value;
+            
+            cellsize = 250 / (gridsize);
+            
+            solution = new bool[gridsize, gridsize]; // Every boolean here defaults to false
+            
+            ClearGuess(); // Generate an empty bool?[,] for the player's guess and set every value to false
+
             // Instantiate a Random class to generate random numbers
             Random rand = new Random();
 
             // Go through every cell and pick a random boolean value
-            for (int i = 0; i < rows; i++)
+            for (int i = 0; i < gridsize; i++)
             {
-                for (int j = 0; j < rows; j++)
+                for (int j = 0; j < gridsize; j++)
                 {
                     solution[i, j] = (rand.Next(blackchance) > 0); // 25/75 for true or false
                 }
@@ -218,11 +213,11 @@ namespace NonogramDatastructure
         {
             StringFormat drawFormat = new StringFormat();
             drawFormat.Alignment = StringAlignment.Center;
-            for (int i = 0; i < rows; i++)
+            for (int i = 0; i < gridsize; i++)
             {
                 string values = string.Join(Environment.NewLine, GetColLabelNumbers(i));
                 DrawString(g, i * cellsize + gridX,
-                    gridY + rows * cellsize,
+                    gridY + gridsize * cellsize,
                     values.Normalize(), drawFormat);
             }
             drawFormat.Dispose();
@@ -231,7 +226,7 @@ namespace NonogramDatastructure
         private void DrawRowLabels(Graphics g)
         {
             StringFormat drawFormat = new StringFormat();
-            for (int i = 0; i < rows; i++)
+            for (int i = 0; i < gridsize; i++)
             {
                 string values = string.Join(", ", GetRowLabelNumbers(i)).Trim();
                 float stringWidth = GetTextWidth(values);
@@ -268,7 +263,7 @@ namespace NonogramDatastructure
             CellY /= cellsize;
 
             // If it falls within the grid
-            if (CellX >= 0 & CellX < rows & CellY >= 0 & CellY < rows)
+            if (CellX >= 0 & CellX < gridsize & CellY >= 0 & CellY < gridsize)
             {
                 // Set that cell to the appropriate value (left click for black, right for notes and middle click for white)
                 // (I chose middle click for white as it's the least important one and not all players will have acces to middle click)
@@ -298,9 +293,9 @@ namespace NonogramDatastructure
             correct = true;
 
             // Go through every cell
-            for (int i = 0; i < rows; i++)
+            for (int i = 0; i < gridsize; i++)
             {
-                for (int j = 0; j < rows; j++)
+                for (int j = 0; j < gridsize; j++)
                 {
                     // If the guess is NOT the same as the solution
                     // (and if the cell is null which is used for notes, assume it's white)
@@ -322,6 +317,28 @@ namespace NonogramDatastructure
             CheckAnswer();
             // And display the appropriate MessageBox
             MessageBox.Show(correct == true ? "Gewonnen!" : "De puzzel is nog niet goed opgelost. Probeer het opnieuw.");
+        }
+
+        private void btnClear_Click(object sender, EventArgs e)
+        {
+            ClearGuess();
+            Refresh();
+        }
+
+        private void ClearGuess()
+        {
+            // If there is no grid, stop here
+            if (!generated) { return; }
+
+            guess = new bool?[gridsize, gridsize]; // Every boolean? here defaults to null
+            // That's why we set them all to false here
+            for (int i = 0; i < gridsize; i++)
+            {
+                for (int j = 0; j < gridsize; j++)
+                {
+                    guess[i, j] = false;
+                }
+            }
         }
     }
 }
