@@ -244,7 +244,7 @@ namespace NonogramDatastructure
             btnCheck.Visible = false;
             //// Enable DoubleBuffer
             //InitializeComponent();
-            //DoubleBuffered = true;
+            DoubleBuffered = true;
             //SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
             //UpdateStyles();
         }
