@@ -128,6 +128,7 @@ namespace NonogramDatastructure
             // Define two colors
             SolidBrush blackBrush = new SolidBrush(Color.Black);
             SolidBrush whiteBrush = new SolidBrush(Color.White);
+            SolidBrush grayBrush = new SolidBrush(Color.DimGray);
 
             // Define a pen for the X symbols in notes
             Pen blackPen = new Pen(blackBrush, 2);
@@ -142,7 +143,7 @@ namespace NonogramDatastructure
                     // Paint the rectangle with the correct color (black for true, white for false)
                     if (grid[i, j] != null)
                     {
-                        e.Graphics.FillRectangle((bool)grid[i, j] ? blackBrush : whiteBrush, rect);
+                        e.Graphics.FillRectangle((bool)grid[i, j] ? grayBrush : whiteBrush, rect);
                     }
                     else
                     {
@@ -159,15 +160,29 @@ namespace NonogramDatastructure
 
             // Go through again to draw the lines (these must be drawn last to ensure they're on top of the grid)
             Pen gridLines = new Pen(blackBrush);
+            Pen thickGridLines = new Pen(blackBrush, 3);
             for (int i = 0; i < gridsize; i++)
             {
                 for (int j = 0; j < gridsize; j++)
                 {
                     // Draw all vertical lines
-                    e.Graphics.DrawLine(gridLines, gridX + j * cellsize, gridY, gridX + j * cellsize, gridY + gridsize * cellsize);
+                    if (j%5==0 & j>0)
+                    {
+                        e.Graphics.DrawLine(thickGridLines, gridX + j * cellsize, gridY, gridX + j * cellsize, gridY + gridsize * cellsize);
+                    } else
+                    {
+                        e.Graphics.DrawLine(gridLines, gridX + j * cellsize, gridY, gridX + j * cellsize, gridY + gridsize * cellsize);
+                    }
+                }
+                if (i % 5 == 0 & i > 0)
+                {
+                    e.Graphics.DrawLine(thickGridLines, gridX, gridY + i * cellsize, gridX + gridsize * cellsize, gridY + i * cellsize);
+                }
+                else
+                {
+                    e.Graphics.DrawLine(gridLines, gridX, gridY + i * cellsize, gridX + gridsize * cellsize, gridY + i * cellsize);
                 }
                 // Draw all horizontal lines
-                e.Graphics.DrawLine(gridLines, gridX, gridY + i * cellsize, gridX + gridsize * cellsize, gridY + i * cellsize);
             }
 
             // Draw the borders
